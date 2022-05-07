@@ -1,0 +1,4 @@
+name: AbilityBattlePlugin
+version: '${project.version}'
+main: com.gmail.kobun127.aulhu.AUlHu
+api-version: 1.18
