@@ -1,6 +1,9 @@
-package com.gmail.kobun127.aulhu.Abilities.Control;
+package com.gmail.kobun127.aulhu.Abilities.Control.Hikiyose;
 
 import com.gmail.kobun127.aulhu.AUlHu;
+import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
+import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
+import com.gmail.kobun127.aulhu.HowaDraw;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -13,18 +16,17 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
-public class TargetSelectEvent implements Listener {
+public class HikiyoseEvent implements Listener {
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        if (!ControlAbility.isController(player))  {
+        if (!ControlAbility.isController(player)) {
             return;
         }
 
@@ -42,19 +44,17 @@ public class TargetSelectEvent implements Listener {
                     return;
                 }
             }
-            if (itemStack.getType().equals(Material.BLAZE_POWDER)) {
-                if (ControlAbility.usingAbility(player)) {
-                    ControlAbility.cancelTask(player);
+            if (itemStack.getType().equals(Material.GREEN_DYE)) {
+                if (CooldownManager.isCooldown(player, Material.GREEN_DYE)) {
                     return;
                 }
-
                 World world = player.getWorld();
-                Location location = player.getEyeLocation();
+                Location playerEyeLocation = player.getEyeLocation();
 
                 RayTraceResult rayTraceResult = world.rayTrace(
-                        location,
-                        location.getDirection(),
-                        24.0,
+                        playerEyeLocation,
+                        playerEyeLocation.getDirection(),
+                        36,
                         FluidCollisionMode.NEVER,
                         true,
                         0,
@@ -62,25 +62,28 @@ public class TargetSelectEvent implements Listener {
                 );
 
                 if (rayTraceResult == null) return;
-                Entity entity = rayTraceResult.getHitEntity();
-                if (entity == null) return;
-                if (!(entity instanceof LivingEntity)) return;
 
-                ControlAbility.putTask(player, new BukkitRunnable() {
-                    final LivingEntity target = (LivingEntity) entity;
-                    final double distance = player.getEyeLocation().distance(rayTraceResult.getHitPosition().toLocation(player.getWorld()));
-                    Location recentLocation = player.getEyeLocation().add(player.getEyeLocation().getDirection().normalize().multiply(distance));
-                    int timer = 120;
+                Entity targetEntity = rayTraceResult.getHitEntity();
+                if (targetEntity == null) return;
+
+                if (!(targetEntity instanceof LivingEntity)) return;
+
+                player.playSound(playerEyeLocation, Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                player.playSound(playerEyeLocation, Sound.BLOCK_PISTON_CONTRACT, 1, 1);
+                CooldownManager.setCooldown(player, Material.GREEN_DYE, 140);
+                new BukkitRunnable() {
+                    int timer = 40;
                     @Override
                     public void run() {
-                        Location nowLocation = player.getEyeLocation().add(player.getEyeLocation().getDirection().normalize().multiply(distance));
-                        target.setVelocity(nowLocation.toVector().subtract(recentLocation.toVector()));
-                        recentLocation = nowLocation;
-                        target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 5, 1, false, false));
+                        Vector subtract = player.getLocation().toVector().subtract(targetEntity.getLocation().toVector());
+                        targetEntity.setVelocity(subtract.clone().normalize().add(new Vector(0, 0.3, 0)));
+                        HowaDraw.drawLine(Particle.CRIT, targetEntity.getLocation().add(0, targetEntity.getHeight() / 2, 0), player.getLocation());
                         timer--;
-                        if (timer <= 0) cancel();
+                        if (timer <= 0 || subtract.length() <= 1.5) {
+                            cancel();
+                        }
                     }
-                }.runTaskTimer(AUlHu.getPlugin(), 0, 1));
+                }.runTaskTimer(AUlHu.getPlugin(), 0, 1);
             }
         }
     }
