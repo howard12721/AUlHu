@@ -59,7 +59,7 @@ public class HowaLine {
         }
         new BukkitRunnable() {
             int time = 0;
-            final double distance = begin.distance(end);
+            final double distance = begin.distance(end) == 0 ? 0.1 : begin.distance(end);
             final double period = distance / ticks;
             double dens = 0;
             final Vector unitVector = new Vector(
