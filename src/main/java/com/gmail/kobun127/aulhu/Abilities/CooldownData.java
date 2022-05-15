@@ -1,13 +1,12 @@
 package com.gmail.kobun127.aulhu.Abilities;
 
 public class CooldownData {
+    private final double totalCooldown;
+    private double remainCooldown;
     public CooldownData(int cooldown) {
         totalCooldown = cooldown;
         remainCooldown = cooldown;
     }
-
-    private final double totalCooldown;
-    private double remainCooldown;
 
     public void count() {
         remainCooldown -= 1.0;

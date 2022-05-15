@@ -3,7 +3,8 @@ package com.gmail.kobun127.aulhu.Abilities.Control.Buwaa;
 import com.gmail.kobun127.aulhu.AUlHu;
 import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
 import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
-import com.gmail.kobun127.aulhu.HowaDraw;
+import com.gmail.kobun127.aulhu.HowaDraw.HowaDraw;
+import com.gmail.kobun127.aulhu.HowaDraw.Line.HowaLine;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -63,7 +64,12 @@ public class BuwaaEvent implements Listener {
                     public void run() {
                         leftEdge = centerLocation.clone().add(HowaDraw.getPolar(2, yaw)).add(0, Math.sin(Math.toRadians(timer * 20)) / 1.4, 0);
                         rightEdge = centerLocation.clone().add(HowaDraw.getPolar(2, yaw + 180)).add(0, Math.cos(Math.toRadians(timer * 20)) / 1.4, 0);
-                        HowaDraw.drawLine(Particle.SWEEP_ATTACK, leftEdge, rightEdge, 0.8);
+                        new HowaLine(AUlHu.getPlugin())
+                                .setParticle(Particle.SWEEP_ATTACK)
+                                .setBegin(leftEdge)
+                                .setEnd(rightEdge)
+                                .setDensity(0.8)
+                                .draw();
                         centerLocation.add(moveVector);
                         World world = centerLocation.getWorld();
                         for (Entity entity : Objects.requireNonNull(world).getNearbyEntities(centerLocation, 2, 1, 2)) {

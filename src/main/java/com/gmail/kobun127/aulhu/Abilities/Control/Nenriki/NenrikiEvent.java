@@ -3,7 +3,8 @@ package com.gmail.kobun127.aulhu.Abilities.Control.Nenriki;
 import com.gmail.kobun127.aulhu.AUlHu;
 import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
 import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
-import com.gmail.kobun127.aulhu.HowaDraw;
+import com.gmail.kobun127.aulhu.HowaDraw.Circle.HowaCircle;
+import com.gmail.kobun127.aulhu.HowaDraw.Line.HowaLine;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -68,7 +69,7 @@ public class NenrikiEvent implements Listener {
                         24.0,
                         FluidCollisionMode.NEVER,
                         true,
-                        0,
+                        0.5,
                         entity -> entity != player
                 );
 
@@ -80,10 +81,11 @@ public class NenrikiEvent implements Listener {
                 Nenriki.putTask(player, new BukkitRunnable() {
                     final LivingEntity target = (LivingEntity) entity;
                     final double distance = player.getEyeLocation().distance(rayTraceResult.getHitPosition().toLocation(player.getWorld()));
-                    int timer = 90;
                     final double maxSpeed = 2.2;
                     final double offset = -target.getEyeHeight() / 2;
+                    int timer = 90;
                     Location recentTargetLocation = target.getLocation();
+
                     @Override
                     public void run() {
                         Location nowLocation = player.getEyeLocation().add(player.getEyeLocation().getDirection().normalize().multiply(distance)).add(0, offset, 0);
@@ -93,13 +95,28 @@ public class NenrikiEvent implements Listener {
                         }
                         target.setVelocity(velocity);
                         target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 5, 1, false, false));
-                        HowaDraw.drawCircle(Particle.SPELL_WITCH, player.getLocation().add(0, 1.2, 0), 4);
-                        HowaDraw.drawLineTimer(Particle.ENCHANTMENT_TABLE, player.getLocation().add(0, 1, 0), target.getLocation().add(0, -offset, 0), 18, 1);
-                        HowaDraw.drawLineTimer(Particle.ENCHANTMENT_TABLE, player.getLocation().add(2.5, 3, 0), target.getLocation().add(0, -offset, 0), 18, 1);
-                        HowaDraw.drawLineTimer(Particle.ENCHANTMENT_TABLE, player.getLocation().add(-2.5, 3, 0), target.getLocation().add(0, -offset, 0), 18, 1);
-                        HowaDraw.drawLineTimer(Particle.ENCHANTMENT_TABLE, player.getLocation().add(0, 3, 2.5), target.getLocation().add(0, -offset, 0), 18, 1);
-                        HowaDraw.drawLineTimer(Particle.ENCHANTMENT_TABLE, player.getLocation().add(0, 3, -2.5), target.getLocation().add(0, -offset, 0), 18, 1);
-                        HowaDraw.drawLineTimer(Particle.END_ROD, recentTargetLocation.add(0, -offset, 0), target.getLocation().add(0, -offset, 0), 15, 0.2);
+                        new HowaCircle(AUlHu.getPlugin())
+                                .setParticle(Particle.SPELL_WITCH)
+                                .setCenter(player.getLocation().add(0, 1.2, 0))
+                                .setDensity(4)
+                                .draw();
+                        HowaLine howaLine = new HowaLine(AUlHu.getPlugin())
+                                .setParticle(Particle.ENCHANTMENT_TABLE)
+                                .setEnd(target.getLocation().add(0, -offset, 0))
+                                .setDensity(1)
+                                .setTicks(18);
+                        howaLine.setBegin(player.getLocation().add(0, 1, 0)).draw();
+                        howaLine.setBegin(player.getLocation().add(2.5, 3, 0)).draw();
+                        howaLine.setBegin(player.getLocation().add(-2.5, 3, 0)).draw();
+                        howaLine.setBegin(player.getLocation().add(0, 3, 2.5)).draw();
+                        howaLine.setBegin(player.getLocation().add(0, 3, -2.5)).draw();
+                        new HowaLine(AUlHu.getPlugin())
+                                .setParticle(Particle.END_ROD)
+                                .setBegin(recentTargetLocation.add(0, -offset, 0))
+                                .setEnd(target.getLocation().add(0, -offset, 0))
+                                .setDensity(0.2)
+                                .setTicks(15)
+                                .draw();
                         recentTargetLocation = target.getLocation();
                         timer--;
                         if (timer <= 0 || target.isDead()) {

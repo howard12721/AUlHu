@@ -3,7 +3,6 @@ package com.gmail.kobun127.aulhu.Abilities.Control.Tama;
 import com.gmail.kobun127.aulhu.AUlHu;
 import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
 import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
-import com.gmail.kobun127.aulhu.HowaDraw;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -55,6 +54,7 @@ public class TamaEvent implements Listener {
                     final Location centerLocation = player.getLocation().add(0, 0.8, 0);
                     final Vector moveVector = centerLocation.getDirection().multiply(0.8);
                     int timer = 70;
+
                     @Override
                     public void run() {
                         World world = centerLocation.getWorld();

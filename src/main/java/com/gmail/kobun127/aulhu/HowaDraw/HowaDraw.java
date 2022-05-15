@@ -1,5 +1,6 @@
-package com.gmail.kobun127.aulhu;
+package com.gmail.kobun127.aulhu.HowaDraw;
 
+import com.gmail.kobun127.aulhu.AUlHu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -106,23 +107,23 @@ public class HowaDraw {
 
     //円アニメーション描画 速度パラメータあり
     public static void drawCircleTimer(Particle particle, Location center, double r, int tick) {
-        drawCircleTimer(particle, center, r, tick, 10);
+        drawCircleTimer(particle, center, r, tick, 10, 0);
     }
 
     //円アニメーション描画 密度パラメータあり
     public static void drawCircleTimer(Particle particle, Location center, double r, double density) {
-        drawCircleTimer(particle, center, r, 20, density);
+        drawCircleTimer(particle, center, r, 20, density, 0);
     }
 
     //円アニメーション描画 速度、密度パラメータあり
-    public static void drawCircleTimer(Particle particle, Location center, double r, int tick, double density) {
+    public static void drawCircleTimer(Particle particle, Location center, double r, int tick, double density, double yaw) {
         World world = center.getWorld();
         if (world == null) {
             return;
         }
         new BukkitRunnable() {
             int time = 0;
-            double angle = 0;
+            double angle = yaw;
             final double period = 360.0 / tick;
 
             @Override
@@ -132,7 +133,7 @@ public class HowaDraw {
                     world.spawnParticle(particle, center.clone().add(r * Math.cos(Math.toRadians(angle)), 0, r * Math.sin(Math.toRadians(angle))), 1, 0, 0, 0, 0);
                     angle += density;
                 }
-                if (angle >= 360) {
+                if (angle >= 360 + yaw) {
                     cancel();
                 }
             }

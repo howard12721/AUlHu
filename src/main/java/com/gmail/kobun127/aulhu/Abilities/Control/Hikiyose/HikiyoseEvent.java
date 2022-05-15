@@ -3,7 +3,8 @@ package com.gmail.kobun127.aulhu.Abilities.Control.Hikiyose;
 import com.gmail.kobun127.aulhu.AUlHu;
 import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
 import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
-import com.gmail.kobun127.aulhu.HowaDraw;
+import com.gmail.kobun127.aulhu.HowaDraw.HowaDraw;
+import com.gmail.kobun127.aulhu.HowaDraw.Line.HowaLine;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -57,7 +58,7 @@ public class HikiyoseEvent implements Listener {
                         36,
                         FluidCollisionMode.NEVER,
                         true,
-                        0,
+                        0.5,
                         entity -> entity != player
                 );
 
@@ -73,11 +74,16 @@ public class HikiyoseEvent implements Listener {
                 CooldownManager.setCooldown(player, Material.GREEN_DYE, 140);
                 new BukkitRunnable() {
                     int timer = 40;
+
                     @Override
                     public void run() {
                         Vector subtract = player.getLocation().toVector().subtract(targetEntity.getLocation().toVector());
                         targetEntity.setVelocity(subtract.clone().normalize().add(new Vector(0, 0.3, 0)));
-                        HowaDraw.drawLine(Particle.CRIT, targetEntity.getLocation().add(0, targetEntity.getHeight() / 2, 0), player.getLocation());
+                        new HowaLine(AUlHu.getPlugin())
+                                .setParticle(Particle.CRIT)
+                                .setBegin(targetEntity.getLocation().add(0, targetEntity.getHeight() / 2, 0))
+                                .setEnd(player.getLocation())
+                                .draw();
                         timer--;
                         if (timer <= 0 || subtract.length() <= 1.5) {
                             cancel();

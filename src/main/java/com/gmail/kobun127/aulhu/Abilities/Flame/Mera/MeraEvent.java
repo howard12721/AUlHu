@@ -1,13 +1,12 @@
-package com.gmail.kobun127.aulhu.Abilities.Control.Kotei;
+package com.gmail.kobun127.aulhu.Abilities.Flame.Mera;
 
 import com.gmail.kobun127.aulhu.AUlHu;
-import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
 import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
+import com.gmail.kobun127.aulhu.Abilities.Flame.FlameAbility;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,15 +16,16 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
 
-public class KoteiEvent implements Listener {
+import java.util.Random;
+
+public class MeraEvent implements Listener {
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        if (!ControlAbility.isController(player)) {
+        if (!FlameAbility.isFlamer(player)) {
             return;
         }
 
@@ -43,17 +43,17 @@ public class KoteiEvent implements Listener {
                     return;
                 }
             }
-            if (itemStack.getType().equals(Material.NETHER_STAR)) {
-                if (CooldownManager.isCooldown(player, Material.NETHER_STAR)) {
+            if (itemStack.getType().equals(Material.FIRE_CHARGE)) {
+                if (CooldownManager.isCooldown(player, Material.FIRE_CHARGE)) {
                     return;
                 }
-                World world = player.getWorld();
-                Location playerEyeLocation = player.getEyeLocation();
 
+                Location playerEyeLocation = player.getEyeLocation();
+                World world = player.getWorld();
                 RayTraceResult rayTraceResult = world.rayTrace(
                         playerEyeLocation,
                         playerEyeLocation.getDirection(),
-                        30,
+                        36,
                         FluidCollisionMode.NEVER,
                         true,
                         0.5,
@@ -62,30 +62,26 @@ public class KoteiEvent implements Listener {
 
                 if (rayTraceResult == null) return;
 
-                Entity targetEntity = rayTraceResult.getHitEntity();
-                if (targetEntity == null) return;
-
-                if (!(targetEntity instanceof LivingEntity)) return;
-
-                player.playSound(playerEyeLocation, Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
-                CooldownManager.setCooldown(player, Material.NETHER_STAR, 500);
+                Location hitLocation = rayTraceResult.getHitPosition().toLocation(world);
+                Location spawnLocation = hitLocation.clone();
+                spawnLocation.add(new Random().nextInt(140) - 70, 180, new Random().nextInt(140) - 70);
+                Fireball meteor = world.spawn(spawnLocation, Fireball.class, fireball -> {
+                    fireball.setShooter(player);
+                    fireball.setBounce(false);
+                    fireball.setDirection(hitLocation.toVector().subtract(spawnLocation.toVector()).normalize().multiply(2.5));
+                    fireball.setIsIncendiary(false);
+                    fireball.setYield(8);
+                });
+                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 1);
                 new BukkitRunnable() {
-                    int timer = 120;
-
                     @Override
                     public void run() {
-                        targetEntity.setVelocity(new Vector(0, -1, 0));
-                        targetEntity.getWorld().spawnParticle(Particle.SMOKE_LARGE, targetEntity.getLocation(), 3, 0.5, 0.5, 0.5, 0);
-                        timer--;
-                        if (timer % 5 == 0) {
-                            ((LivingEntity) targetEntity).setNoDamageTicks(0);
-                            ((LivingEntity) targetEntity).damage(1);
-                        }
-                        if (timer <= 0) {
-                            cancel();
-                        }
+                        if (meteor.isDead()) cancel();
+                        world.spawnParticle(Particle.LAVA, meteor.getLocation(), 30, 2, 2, 2, 0, null, true);
+                        player.spawnParticle(Particle.REDSTONE, hitLocation, 8, 0.2, 0.2, 0.2, 0, new Particle.DustOptions(Color.RED, 2));
                     }
                 }.runTaskTimer(AUlHu.getPlugin(), 0, 1);
+                CooldownManager.setCooldown(player, Material.FIRE_CHARGE, 600);
             }
         }
     }
