@@ -3,7 +3,6 @@ package com.gmail.kobun127.aulhu.Abilities.Control.Hikiyose;
 import com.gmail.kobun127.aulhu.AUlHu;
 import com.gmail.kobun127.aulhu.Abilities.Control.ControlAbility;
 import com.gmail.kobun127.aulhu.Abilities.CooldownManager;
-import com.gmail.kobun127.aulhu.HowaDraw.HowaDraw;
 import com.gmail.kobun127.aulhu.HowaDraw.Line.HowaLine;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -78,14 +77,18 @@ public class HikiyoseEvent implements Listener {
                     @Override
                     public void run() {
                         Vector subtract = player.getLocation().toVector().subtract(targetEntity.getLocation().toVector());
-                        targetEntity.setVelocity(subtract.clone().normalize().add(new Vector(0, 0.3, 0)));
+                        targetEntity.setVelocity(subtract.clone().normalize().multiply(2).add(new Vector(0, 0.3, 0)));
                         new HowaLine(AUlHu.getPlugin())
                                 .setParticle(Particle.CRIT)
                                 .setBegin(targetEntity.getLocation().add(0, targetEntity.getHeight() / 2, 0))
                                 .setEnd(player.getLocation())
                                 .draw();
+                        if (subtract.length() <= 1.5) {
+                            targetEntity.setVelocity(new Vector(0, 0, 0));
+                            cancel();
+                        }
                         timer--;
-                        if (timer <= 0 || subtract.length() <= 1.5) {
+                        if (timer <= 0) {
                             cancel();
                         }
                     }
